@@ -23,6 +23,7 @@ import sys, codecs
 sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
 sys.stdin = codecs.getreader('utf_8')(sys.stdin)
 
+### OAuth ###
 def get_oauth():
     CONSUMER_KEY=secret.CONSUMER_KEY
     CONSUMER_SECRET=secret.CONSUMER_SECRET
@@ -33,6 +34,15 @@ def get_oauth():
     auth.set_access_token(ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET)
     return auth
 
+### TEMPLATE ###
+TEMPLATE = u'''---{name}/@{screen}---
+    {text}
+via {src} {created}'''
+
+RT_TEMPLATE = TEMPLATE + ' Retweeted by {rtby}'
+
+
+### Replace String to Read Aloud###
 def str_replace(string):
     string = re.sub('&.+;', ' ', string)
     # remove URL
@@ -48,23 +58,46 @@ def str_replace(string):
     string = re.sub('\(|\)', ' ', string)
     return string
 
+### Tweepy ###
 class CustomStreamListener(tweepy.StreamListener):
  
     def on_status(self, status):
  
         try:
             status.created_at += timedelta(hours=9) # add 9 hours for Japanese time
-            print u'---{name}/@{screen}---\n   {text}\nvia {src} {created}'.format(
-                    name = status.author.name,
-                    screen = status.author.screen_name,
-                    text = status.text,
-                    src = status.source,
-                    created = status.created_at)
-            read_text = str_replace(status.text.encode('utf-8'))
+
+            if hasattr(status, 'retweeted_status'):
+                name = status.retweeted_status.author.name
+                screen = status.retweeted_status.author.screen_name
+                text = status.retweeted_status.text
+                src = status.retweeted_status.source
+                created = status.retweeted_status.created_at
+                rtby = status.author.screen_name
+                print RT_TEMPLATE.format(
+                            name=name,
+                            screen=screen,
+                            text=text,
+                            src=src,
+                            created=created,
+                            rtby=rtby)
+            else:
+                name = status.author.name
+                screen = status.author.screen_name
+                text = status.text
+                src = status.source
+                created = status.created_at
+                print TEMPLATE.format(
+                            name=name,
+                            screen=screen,
+                            text=text,
+                            src=src,
+                            created=created)
+
+            read_text = str_replace(text.encode('utf-8'))
             read_text = romaji2katakana(read_text)
 
-            # cmd = 'SayKotoeri2 -p aq_rb2 -b 80 -s 120 "{text}" >/dev/null 2>&1'.format(text=read_text)
             cmd = 'SayKotoeri -s "-s 120" "{text}" >/dev/null 2>&1'.format(text=read_text)
+            # cmd = 'SayKotoeri2 -p aq_rb2 -b 80 -s 120 "{text}" >/dev/null 2>&1'.format(text=read_text)
             try:
                 call(cmd, shell=True)
             except:
