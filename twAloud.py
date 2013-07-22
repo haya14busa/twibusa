@@ -36,7 +36,7 @@ def get_oauth():
 
 ### TEMPLATE ###
 TEMPLATE = u'''---{name}/@{screen}---
-    {text}
+{text}
 via {src} {created}'''
 
 RT_TEMPLATE = TEMPLATE + ' Retweeted by {rtby}'
