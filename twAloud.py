@@ -51,6 +51,8 @@ def str_replace(string):
     string = re.sub('"', ' ', string)
     string = re.sub("'", ' ', string)
     string = re.sub('\/', ' ', string)
+    string = re.sub(';', ' ', string)
+    string = re.sub('`', ' ', string)
 
     string = re.sub('RT', 'リツイート', string)
     string = re.sub('♡', 'ハァト', string)
