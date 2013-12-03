@@ -53,10 +53,10 @@ def showTL(api, read_id):
         for status in tl:
             status.created_at += timedelta(hours=9) # add 9 hours for Japanese time
             print u'---{name}/@{screen}---\n   {text}\nvia {src} {created}'.format(
-                    name = status.author.name,
-                    screen = status.author.screen_name,
-                    text = status.text,
-                    src = status.source,
+                    name    = status.author.name,
+                    screen  = status.author.screen_name,
+                    text    = status.text,
+                    src     = status.source,
                     created = status.created_at)
             read_text = str_replace(status.text.encode('utf_8'))
             read_text = romaji2katakana(read_text)
