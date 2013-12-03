@@ -99,9 +99,9 @@ class CustomStreamListener(tweepy.StreamListener):
 
             read_text = str_replace(text.encode('utf-8'))
             read_text = romaji2katakana(read_text)
+            read_text = read_text.replace('\n','')
 
-            cmd = 'SayKotoeri -s "-s 120" "{text}" >/dev/null 2>&1'.format(text=read_text)
-            # cmd = 'SayKotoeri2 -p aq_rb2 -b 80 -s 120 "{text}" >/dev/null 2>&1'.format(text=read_text)
+            cmd = '~/bin/talk.sh "{text}"'.format(text=read_text)
             try:
                 call(cmd, shell=True)
             except:
