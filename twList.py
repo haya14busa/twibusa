@@ -33,22 +33,27 @@ def get_oauth():
     auth.set_access_token(ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET)
     return auth
 
+### Replace String to Read Aloud###
 def str_replace(string):
     string = re.sub('&.+;', ' ', string)
     # remove URL
-    string = re.sub('(https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)', 'ゆーあーるえる', string)
+    string = re.sub('(https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)', 'ユーアールエル', string)
     # remove quote
     string = re.sub('"', ' ', string)
     string = re.sub("'", ' ', string)
     string = re.sub('\/', ' ', string)
+    string = re.sub(';', ' ', string)
+    string = re.sub('`', ' ', string)
 
-    string = re.sub('RT', 'りついーと', string)
+    string = re.sub('RT', 'リツイート', string)
     string = re.sub('♡', 'ハァト', string)
+    string = re.sub('\?', '？', string)
+    string = re.sub('\(|\)', ' ', string)
     return string
-  
+
 def showTL(api, read_id):
     try:
-        tl = api.list_timeline('haya14busa', 'it', count=10, since_id = read_id)
+        tl = api.list_timeline('haya14busa', getArgs(), count=10, since_id = read_id)
         tl.reverse()
         for status in tl:
             status.created_at += timedelta(hours=9) # add 9 hours for Japanese time
@@ -60,10 +65,14 @@ def showTL(api, read_id):
                     created = status.created_at)
             read_text = str_replace(status.text.encode('utf_8'))
             read_text = romaji2katakana(read_text)
-            # print read_text
-            call(['SayKotoeri -s "-s 120" "{text}" >/dev/null 2>&1'.format(text=read_text)], shell=True)
-            # call(['say -v "kyoko" "{text}"'.format(text=read_text)], shell=False) # Kyoko
-            # call(['say  "{text}"'.format(text=read_text)], shell=False) # for English
+            read_text = read_text.replace('\n','')
+
+            cmd = '~/bin/talk.sh "{text}"'.format(text=read_text)
+            try:
+                call(cmd, shell=True)
+            except:
+                print "SayKotoeri Couldn't read aloud"
+
         else:
             global lastSinceId
             lastSinceId = tl[-1].id
@@ -71,6 +80,12 @@ def showTL(api, read_id):
     except Exception, e:
         time.sleep(10)
         pass
+
+def getArgs():
+    if len(sys.argv) == 2:
+        return sys.argv[1]
+    else:
+        return 'vimvimvim'
 
 def main():
     auth = get_oauth()
